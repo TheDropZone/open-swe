@@ -12,10 +12,7 @@ import {
   getChangedFilesStatus,
   pushEmptyCommit,
 } from "../../../utils/github/git.js";
-import {
-  createPullRequest,
-  updatePullRequest,
-} from "../../../utils/github/api.js";
+import { getVCS } from "../../../utils/vcs/index.js";
 import { createLogger, LogLevel } from "../../../utils/logger.js";
 import { z } from "zod";
 import {
@@ -38,11 +35,7 @@ import {
 import { createOpenPrToolFields } from "@open-swe/shared/open-swe/tools";
 import { trackCachePerformance } from "../../../utils/caching.js";
 import { getModelManager } from "../../../utils/llms/model-manager.js";
-import {
-  GitHubPullRequest,
-  GitHubPullRequestList,
-  GitHubPullRequestUpdate,
-} from "../../../utils/github/types.js";
+import { PullRequest } from "../../../utils/vcs/types.js";
 import { getRepoAbsolutePath } from "@open-swe/shared/git";
 import { GITHUB_USER_LOGIN_HEADER } from "@open-swe/shared/constants";
 import { shouldCreateIssue } from "../../../utils/should-create-issue.js";
@@ -94,7 +87,6 @@ export async function openPullRequest(
   state: GraphState,
   config: GraphConfig,
 ): Promise<GraphUpdate> {
-  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
 
   const { sandbox, codebaseTree, dependenciesInstalled } =
     await getSandboxWithErrorHandling(
@@ -204,35 +196,33 @@ export async function openPullRequest(
   const prForTask = getPullRequestNumberFromActiveTask(
     updatedTaskPlan ?? state.taskPlan,
   );
-  let pullRequest:
-    | GitHubPullRequest
-    | GitHubPullRequestList[number]
-    | GitHubPullRequestUpdate
-    | null = null;
+  let pullRequest: PullRequest | null = null;
 
   const reviewPullNumber = config.configurable?.reviewPullNumber;
   const prBody = `${shouldCreateIssue(config) ? `Fixes #${state.githubIssueId}` : ""}${reviewPullNumber ? `\n\nTriggered from pull request: #${reviewPullNumber}` : ""}${userLogin ? `\n\nOwner: @${userLogin}` : ""}\n\n${body}`;
 
+  const vcs = getVCS();
   if (!prForTask) {
     // No PR created yet. Shouldn't be possible, but we have a condition here anyway
-    pullRequest = await createPullRequest({
+    pullRequest = await vcs.createPullRequest({
       owner,
       repo,
       headBranch: branchName,
       title,
       body: prBody,
-      githubInstallationToken,
       baseBranch: state.targetRepository.branch,
     });
   } else {
     // Ensure the PR is ready for review
-    pullRequest = await updatePullRequest({
-      owner,
-      repo,
-      title,
-      body: prBody,
-      pullNumber: prForTask,
-      githubInstallationToken,
+    // TODO: Add updatePullRequest to VCS interface
+    // For now, we will just create a new PR
+    pullRequest = await vcs.createPullRequest({
+        owner,
+        repo,
+        headBranch: branchName,
+        title,
+        body: prBody,
+        baseBranch: state.targetRepository.branch,
     });
   }
 

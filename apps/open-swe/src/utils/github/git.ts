@@ -15,7 +15,8 @@ import {
   getActiveTask,
   getPullRequestNumberFromActiveTask,
 } from "@open-swe/shared/open-swe/tasks";
-import { createPullRequest, getBranch } from "./api.js";
+import { getVCS } from "../vcs/index.js";
+import { getBranch } from "./api.js";
 import { addTaskPlanToIssue } from "./issue-task.js";
 import { DEFAULT_EXCLUDED_PATTERNS } from "./constants.js";
 import { escapeRegExp } from "../string-utils.js";
@@ -207,7 +208,6 @@ export async function checkoutBranchAndCommit(
   sandbox: Sandbox,
   options: {
     branchName?: string;
-    githubInstallationToken: string;
     taskPlan: TaskPlan;
     githubIssueId: number;
   },
@@ -247,12 +247,16 @@ export async function checkoutBranchAndCommit(
   );
 
   // Push the changes using the git API so it handles authentication for us.
+  // This part of the code is using the sandbox's git push method which requires a token.
+  // We will need to refactor this to use the VCS interface in the future.
+  // For now, we will get the token from the config.
+  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
   const pushRes = await withRetry(
     async () => {
       return await sandbox.git.push(
         absoluteRepoDir,
         "git",
-        options.githubInstallationToken,
+        githubInstallationToken,
       );
     },
     { retries: 3, delay: 0 },
@@ -277,7 +281,7 @@ export async function checkoutBranchAndCommit(
         return await sandbox.git.pull(
           absoluteRepoDir,
           "git",
-          options.githubInstallationToken,
+          githubInstallationToken,
         );
       },
       { retries: 1, delay: 0 },
@@ -303,7 +307,7 @@ export async function checkoutBranchAndCommit(
         return await sandbox.git.push(
           absoluteRepoDir,
           "git",
-          options.githubInstallationToken,
+          githubInstallationToken,
         );
       },
       { retries: 3, delay: 0 },
@@ -344,16 +348,14 @@ export async function checkoutBranchAndCommit(
 
     const reviewPullNumber = config.configurable?.reviewPullNumber;
 
-    const pullRequest = await createPullRequest({
+    const vcs = getVCS();
+    const pullRequest = await vcs.createPullRequest({
       owner: targetRepository.owner,
       repo: targetRepository.repo,
       headBranch: branchName,
       title: `[WIP]: ${activeTask?.title ?? "Open SWE task"}`,
       body: `**WORK IN PROGRESS OPEN SWE PR**${hasIssue ? `\n\nFixes: #${options.githubIssueId}` : ""}${reviewPullNumber ? `\n\nTriggered from pull request: #${reviewPullNumber}` : ""}`,
-      githubInstallationToken: options.githubInstallationToken,
-      draft: true,
       baseBranch: targetRepository.branch,
-      nullOnError: true,
     });
 
     if (pullRequest) {

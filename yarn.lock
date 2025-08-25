@@ -1645,6 +1645,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/core@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/core@npm:43.4.0"
+  dependencies:
+    "@gitbeaker/requester-utils": ^43.4.0
+    qs: ^6.14.0
+    xcase: ^2.0.1
+  checksum: 15f595a8c75801f0714975f84f4482e93d673f88b24143dd929f673c5038ff481ec43d594f18126bea294f24a326fa633f3e73e17394b9602b7b48568c594bf4
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/requester-utils@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/requester-utils@npm:43.4.0"
+  dependencies:
+    picomatch-browser: ^2.2.6
+    qs: ^6.14.0
+    rate-limiter-flexible: ^4.0.1
+    xcase: ^2.0.1
+  checksum: 3c92f45c996656fa83a009365dc627517fc8235af826d18631c1b7be648f41479ab00f39e49dd75138aaa14949b066d7d8417acdfd9946ef40848684dafce69f
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/rest@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/rest@npm:43.4.0"
+  dependencies:
+    "@gitbeaker/core": ^43.4.0
+    "@gitbeaker/requester-utils": ^43.4.0
+  checksum: 3a8afa20f05651b3ff4be12c24308fc35d0eb91bed57a475c15959c97525f4bc9207b957a0409df07a9d11632aba8cbebf96e41cf83c28b675cd9b20ebb1751f
+  languageName: node
+  linkType: hard
+
 "@google/generative-ai@npm:^0.24.0":
   version: 0.24.1
   resolution: "@google/generative-ai@npm:0.24.1"
@@ -4095,6 +4128,7 @@ __metadata:
     "@daytonaio/sdk": ^0.25.5
     "@eslint/eslintrc": ^3.1.0
     "@eslint/js": ^9.19.0
+    "@gitbeaker/rest": ^43.4.0
     "@jest/globals": ^29.7.0
     "@langchain/anthropic": ^0.3.26
     "@langchain/community": ^0.3.47
@@ -16674,6 +16708,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"picomatch-browser@npm:^2.2.6":
+  version: 2.2.6
+  resolution: "picomatch-browser@npm:2.2.6"
+  checksum: 946c50a8654da43167a0f9a90dd0b50f3d4e830ee71c0926ee9052d7e6f40d8907deaafba19cea71b97207b4aaa52c245335e4cd5bbaf78fe2ba567cd0c341fa
+  languageName: node
+  linkType: hard
+
 "picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.3, picomatch@npm:^2.3.1":
   version: 2.3.1
   resolution: "picomatch@npm:2.3.1"
@@ -17189,6 +17230,13 @@ __metadata:
   version: 1.2.1
   resolution: "range-parser@npm:1.2.1"
   checksum: 0a268d4fea508661cf5743dfe3d5f47ce214fd6b7dec1de0da4d669dd4ef3d2144468ebe4179049eff253d9d27e719c88dae55be64f954e80135a0cada804ec9
+  languageName: node
+  linkType: hard
+
+"rate-limiter-flexible@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "rate-limiter-flexible@npm:4.0.1"
+  checksum: 88cb4ae4c6a94646eb4987f08ae203896fc340d84038e145958607ab711d9c703e47e55f177a4bf9bab4c637c73ee2254fffe2ec4e289d41389c8502194ca868
   languageName: node
   linkType: hard
 
@@ -20862,6 +20910,13 @@ __metadata:
   dependencies:
     is-wsl: ^3.1.0
   checksum: de4c92187e04c3c27b4478f410a02e81c351dc85efa3447bf1666f34fc80baacd890a6698ec91995631714086992036013286aea3d77e6974020d40a08e00aec
+  languageName: node
+  linkType: hard
+
+"xcase@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "xcase@npm:2.0.1"
+  checksum: 1d407306593f1049ebb5d3b7b86b0d40b4b108be428cf4d17c57454ef5444c962555c387384c121d83a6bcf7a9b6b04a51cc4b76786bfb0fac8d0a108b5b7ef8
   languageName: node
   linkType: hard
 
