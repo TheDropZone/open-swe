@@ -3,8 +3,7 @@ import {
   TargetRepository,
   TaskPlan,
 } from "@open-swe/shared/open-swe/types";
-import { getIssue, updateIssue } from "./api.js";
-import { getGitHubTokensFromConfig } from "../github-tokens.js";
+import { getVCS } from "../vcs/index.js";
 import { createLogger, LogLevel } from "../logger.js";
 import { isLocalMode } from "@open-swe/shared/open-swe/local-mode";
 const logger = createLogger(LogLevel.INFO, "IssueTaskString");
@@ -101,12 +100,11 @@ export async function getPlansFromIssue(
       proposedPlan: null,
     };
   }
-  const issue = await getIssue({
+  const vcs = getVCS();
+  const issue = await vcs.getIssue({
     owner: input.targetRepository.owner,
     repo: input.targetRepository.repo,
     issueNumber: input.githubIssueId,
-    githubInstallationToken:
-      getGitHubTokensFromConfig(config).githubInstallationToken,
   });
   if (!issue || !issue.body) {
     throw new Error(
@@ -187,12 +185,11 @@ export async function addProposedPlanToIssue(
   config: GraphConfig,
   proposedPlan: string[],
 ) {
-  const issue = await getIssue({
+  const vcs = getVCS();
+  const issue = await vcs.getIssue({
     owner: input.targetRepository.owner,
     repo: input.targetRepository.repo,
     issueNumber: input.githubIssueId,
-    githubInstallationToken:
-      getGitHubTokensFromConfig(config).githubInstallationToken,
   });
   if (!issue || !issue.body) {
     throw new Error(
@@ -207,12 +204,10 @@ export async function addProposedPlanToIssue(
     "proposedPlan",
   );
 
-  await updateIssue({
+  await vcs.updateIssue({
     owner: input.targetRepository.owner,
     repo: input.targetRepository.repo,
     issueNumber: input.githubIssueId,
-    githubInstallationToken:
-      getGitHubTokensFromConfig(config).githubInstallationToken,
     body: newBody,
   });
 }
@@ -222,12 +217,11 @@ export async function addTaskPlanToIssue(
   config: GraphConfig,
   taskPlan: TaskPlan,
 ): Promise<void> {
-  const issue = await getIssue({
+  const vcs = getVCS();
+  const issue = await vcs.getIssue({
     owner: input.targetRepository.owner,
     repo: input.targetRepository.repo,
     issueNumber: input.githubIssueId,
-    githubInstallationToken:
-      getGitHubTokensFromConfig(config).githubInstallationToken,
   });
 
   if (!issue || !issue.body) {
@@ -237,12 +231,10 @@ export async function addTaskPlanToIssue(
   const taskPlanString = JSON.stringify(taskPlan, null, 2);
   const newBody = insertPlanToIssueBody(issue.body, taskPlanString, "taskPlan");
 
-  await updateIssue({
+  await vcs.updateIssue({
     owner: input.targetRepository.owner,
     repo: input.targetRepository.repo,
     issueNumber: input.githubIssueId,
-    githubInstallationToken:
-      getGitHubTokensFromConfig(config).githubInstallationToken,
     body: newBody,
   });
 }

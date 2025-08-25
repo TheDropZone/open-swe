@@ -1,10 +1,5 @@
 import { GraphConfig } from "@open-swe/shared/open-swe/types";
-import { getGitHubTokensFromConfig } from "../github-tokens.js";
-import {
-  createIssueComment,
-  getIssueComments,
-  updateIssueComment,
-} from "./api.js";
+import { getVCS } from "../vcs/index.js";
 import { createLogger, LogLevel } from "../logger.js";
 import { isLocalMode } from "@open-swe/shared/open-swe/local-mode";
 
@@ -54,12 +49,11 @@ export async function postGitHubIssueComment(input: {
   }
 
   try {
-    const { githubInstallationToken } = getGitHubTokensFromConfig(config);
-    const existingComments = await getIssueComments({
+    const vcs = getVCS();
+    const existingComments = await vcs.getIssueComments({
       owner: targetRepository.owner,
       repo: targetRepository.repo,
       issueNumber: githubIssueId,
-      githubInstallationToken,
       filterBotComments: false,
     });
 
@@ -68,12 +62,11 @@ export async function postGitHubIssueComment(input: {
     );
 
     if (!existingOpenSWEComment) {
-      await createIssueComment({
+      await vcs.createIssueComment({
         owner: targetRepository.owner,
         repo: targetRepository.repo,
         issueNumber: githubIssueId,
         body: commentBody,
-        githubToken: githubInstallationToken,
       });
 
       logger.info(`Posted comment to GitHub issue #${githubIssueId}`);
@@ -85,12 +78,11 @@ export async function postGitHubIssueComment(input: {
       existingOpenSWEComment.body ?? "",
       commentBody,
     );
-    await updateIssueComment({
+    await vcs.updateIssueComment({
       owner: targetRepository.owner,
       repo: targetRepository.repo,
       commentId: existingOpenSWEComment.id,
       body: newCommentBody,
-      githubInstallationToken,
     });
 
     logger.info(`Updated comment to GitHub issue #${githubIssueId}`);

@@ -3,8 +3,7 @@ import {
   PlannerGraphUpdate,
 } from "@open-swe/shared/open-swe/planner/types";
 import { Command } from "@langchain/langgraph";
-import { getGitHubTokensFromConfig } from "../../../utils/github-tokens.js";
-import { getIssue, getIssueComments } from "../../../utils/github/api.js";
+import { getVCS } from "../../../utils/vcs/index.js";
 import { v4 as uuidv4 } from "uuid";
 import {
   AIMessage,
@@ -42,17 +41,17 @@ export async function prepareGraphState(
     throw new Error("No target repository provided");
   }
 
-  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
-  const baseGetIssueInputs = {
-    owner: state.targetRepository.owner,
-    repo: state.targetRepository.repo,
-    issueNumber: state.githubIssueId,
-    githubInstallationToken,
-  };
+  const vcs = getVCS();
   const [issue, comments] = await Promise.all([
-    getIssue(baseGetIssueInputs),
-    getIssueComments({
-      ...baseGetIssueInputs,
+    vcs.getIssue({
+      owner: state.targetRepository.owner,
+      repo: state.targetRepository.repo,
+      issueNumber: state.githubIssueId,
+    }),
+    vcs.getIssueComments({
+      owner: state.targetRepository.owner,
+      repo: state.targetRepository.repo,
+      issueNumber: state.githubIssueId,
       filterBotComments: true,
     }),
   ]);

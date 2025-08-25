@@ -5,9 +5,8 @@ import {
   isHumanMessage,
 } from "@langchain/core/messages";
 import { GitHubIssue, GitHubIssueComment } from "./types.js";
-import { getIssue, getIssueComments } from "./api.js";
+import { getVCS } from "../vcs/index.js";
 import { GraphConfig, TargetRepository } from "@open-swe/shared/open-swe/types";
-import { getGitHubTokensFromConfig } from "../github-tokens.js";
 import { DETAILS_CLOSE_TAG, DETAILS_OPEN_TAG } from "./issue-task.js";
 import { isLocalMode } from "@open-swe/shared/open-swe/local-mode";
 
@@ -58,19 +57,17 @@ export async function getMissingMessages(
     return [];
   }
 
-  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
+  const vcs = getVCS();
   const [issue, comments] = await Promise.all([
-    getIssue({
+    vcs.getIssue({
       owner: input.targetRepository.owner,
       repo: input.targetRepository.repo,
       issueNumber: input.githubIssueId,
-      githubInstallationToken,
     }),
-    getIssueComments({
+    vcs.getIssueComments({
       owner: input.targetRepository.owner,
       repo: input.targetRepository.repo,
       issueNumber: input.githubIssueId,
-      githubInstallationToken,
       filterBotComments: true,
     }),
   ]);

@@ -208,6 +208,7 @@ export async function checkoutBranchAndCommit(
   sandbox: Sandbox,
   options: {
     branchName?: string;
+    githubInstallationToken: string;
     taskPlan: TaskPlan;
     githubIssueId: number;
   },
@@ -247,16 +248,12 @@ export async function checkoutBranchAndCommit(
   );
 
   // Push the changes using the git API so it handles authentication for us.
-  // This part of the code is using the sandbox's git push method which requires a token.
-  // We will need to refactor this to use the VCS interface in the future.
-  // For now, we will get the token from the config.
-  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
   const pushRes = await withRetry(
     async () => {
       return await sandbox.git.push(
         absoluteRepoDir,
         "git",
-        githubInstallationToken,
+        options.githubInstallationToken,
       );
     },
     { retries: 3, delay: 0 },
@@ -281,7 +278,7 @@ export async function checkoutBranchAndCommit(
         return await sandbox.git.pull(
           absoluteRepoDir,
           "git",
-          githubInstallationToken,
+          options.githubInstallationToken,
         );
       },
       { retries: 1, delay: 0 },
@@ -307,7 +304,7 @@ export async function checkoutBranchAndCommit(
         return await sandbox.git.push(
           absoluteRepoDir,
           "git",
-          githubInstallationToken,
+          options.githubInstallationToken,
         );
       },
       { retries: 3, delay: 0 },
@@ -355,6 +352,7 @@ export async function checkoutBranchAndCommit(
       headBranch: branchName,
       title: `[WIP]: ${activeTask?.title ?? "Open SWE task"}`,
       body: `**WORK IN PROGRESS OPEN SWE PR**${hasIssue ? `\n\nFixes: #${options.githubIssueId}` : ""}${reviewPullNumber ? `\n\nTriggered from pull request: #${reviewPullNumber}` : ""}`,
+      draft: true,
       baseBranch: targetRepository.branch,
     });
 
@@ -540,12 +538,12 @@ async function performClone(
     );
   }
 
+  const vcs = getVCS();
   const branchExists = branchName
-    ? !!(await getBranch({
+    ? !!(await vcs.getBranch({
         owner: targetRepository.owner,
         repo: targetRepository.repo,
         branchName,
-        githubInstallationToken,
       }))
     : false;
 

@@ -4,9 +4,8 @@ import {
   ManagerGraphState,
   ManagerGraphUpdate,
 } from "@open-swe/shared/open-swe/manager/types";
-import { getGitHubTokensFromConfig } from "../../../utils/github-tokens.js";
 import { HumanMessage, isHumanMessage } from "@langchain/core/messages";
-import { getIssue } from "../../../utils/github/api.js";
+import { getVCS } from "../../../utils/vcs/index.js";
 import { extractTasksFromIssueContent } from "../../../utils/github/issue-task.js";
 import { getMessageContentFromIssue } from "../../../utils/github/issue-messages.js";
 import { isLocalMode } from "@open-swe/shared/open-swe/local-mode";
@@ -24,17 +23,16 @@ export async function initializeGithubIssue(
     // The human message should already be in the state from the CLI input
     return {};
   }
-  const { githubInstallationToken } = getGitHubTokensFromConfig(config);
   let taskPlan = state.taskPlan;
 
   if (state.messages.length && state.messages.some(isHumanMessage)) {
     // If there are messages, & at least one is a human message, only attempt to read the updated plan from the issue.
     if (state.githubIssueId) {
-      const issue = await getIssue({
+      const vcs = getVCS();
+      const issue = await vcs.getIssue({
         owner: state.targetRepository.owner,
         repo: state.targetRepository.repo,
         issueNumber: state.githubIssueId,
-        githubInstallationToken,
       });
       if (!issue) {
         throw new Error("Issue not found");
@@ -60,11 +58,11 @@ export async function initializeGithubIssue(
     throw new Error("Target repository not provided");
   }
 
-  const issue = await getIssue({
+  const vcs = getVCS();
+  const issue = await vcs.getIssue({
     owner: state.targetRepository.owner,
     repo: state.targetRepository.repo,
     issueNumber: state.githubIssueId,
-    githubInstallationToken,
   });
   if (!issue) {
     throw new Error("Issue not found");

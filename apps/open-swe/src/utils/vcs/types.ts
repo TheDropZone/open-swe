@@ -1,50 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export interface PullRequest {
-  html_url: string;
-  number: number;
-}
-
-export interface Issue {
-  title: string;
-  body: string | null;
-}
-
-export interface IssueComment {
-  body?: string;
-}
-
-export interface Branch {
-  name: string;
-}
+import {
+  GitHubBranch,
+  GitHubIssue,
+  GitHubIssueComment,
+  GitHubPullRequest,
+  GitHubPullRequestList,
+  GitHubPullRequestUpdate,
+  GitHubReviewComment,
+} from "../github/types";
 
 export interface VCS {
   createPullRequest(options: {
     owner: string;
     repo: string;
     headBranch: string;
-    title:string;
+    title: string;
     body?: string;
     baseBranch?: string;
-  }): Promise<PullRequest | null>;
+    draft?: boolean;
+  }): Promise<GitHubPullRequest | GitHubPullRequestList[number] | null>;
 
-  getIssue(options: {
+  markPullRequestReadyForReview(options: {
     owner: string;
     repo: string;
-    issueNumber: number;
-  }): Promise<Issue | null>;
-
-  createIssueComment(options: {
-    owner: string;
-    repo: string;
-    issueNumber: number;
+    pullNumber: number;
+    title: string;
     body: string;
-  }): Promise<IssueComment | null>;
-
-  getBranch(options: {
-    owner: string;
-    repo: string;
-    branchName: string;
-  }): Promise<Branch | null>;
+  }): Promise<GitHubPullRequestUpdate | null>;
 
   updatePullRequest(options: {
     owner: string;
@@ -52,5 +33,79 @@ export interface VCS {
     pullNumber: number;
     title?: string;
     body?: string;
-  }): Promise<PullRequest | null>;
+  }): Promise<GitHubPullRequestUpdate | null>;
+
+  getIssue(options: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+  }): Promise<GitHubIssue | null>;
+
+  getIssueComments(options: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    filterBotComments: boolean;
+  }): Promise<GitHubIssueComment[] | null>;
+
+  createIssue(options: {
+    owner: string;
+    repo: string;
+    title: string;
+    body: string;
+  }): Promise<GitHubIssue | null>;
+
+  updateIssue(options: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    body?: string;
+    title?: string;
+  }): Promise<GitHubIssue | null>;
+
+  createIssueComment(options: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    body: string;
+  }): Promise<GitHubIssueComment | null>;
+
+  updateIssueComment(options: {
+    owner: string;
+    repo: string;
+    commentId: number;
+    body: string;
+  }): Promise<GitHubIssueComment | null>;
+
+  getBranch(options: {
+    owner: string;
+    repo: string;
+    branchName: string;
+  }): Promise<GitHubBranch | null>;
+
+  replyToReviewComment(options: {
+    owner: string;
+    repo: string;
+    commentId: number;
+    body: string;
+    pullNumber: number;
+  }): Promise<GitHubReviewComment | null>;
+
+  quoteReplyToPullRequestComment(options: {
+    owner: string;
+    repo: string;
+    commentId: number;
+    body: string;
+    pullNumber: number;
+    originalCommentUserLogin: string;
+  }): Promise<GitHubIssueComment | null>;
+
+  quoteReplyToReview(options: {
+    owner: string;
+    repo: string;
+    reviewCommentId: number;
+    body: string;
+    pullNumber: number;
+    originalCommentUserLogin: string;
+  }): Promise<GitHubIssueComment | null>;
 }

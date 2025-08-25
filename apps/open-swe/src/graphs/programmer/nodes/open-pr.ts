@@ -27,7 +27,6 @@ import {
   deleteSandbox,
   getSandboxWithErrorHandling,
 } from "../../../utils/sandbox.js";
-import { getGitHubTokensFromConfig } from "../../../utils/github-tokens.js";
 import {
   getActivePlanItems,
   getPullRequestNumberFromActiveTask,
@@ -87,7 +86,6 @@ export async function openPullRequest(
   state: GraphState,
   config: GraphConfig,
 ): Promise<GraphUpdate> {
-
   const { sandbox, codebaseTree, dependenciesInstalled } =
     await getSandboxWithErrorHandling(
       state.sandboxSessionId,
