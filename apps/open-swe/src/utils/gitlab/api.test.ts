@@ -24,17 +24,12 @@ jest.unstable_mockModule('@gitbeaker/rest', () => ({
 
 describe('GitLabVCS', () => {
   let vcs: any;
-  let GitLabVCS: any;
-
-  beforeAll(async () => {
-    const { GitLabVCS: VCS } = await import('./api');
-    GitLabVCS = VCS;
-  });
 
   beforeEach(async () => {
-    vcs = new GitLabVCS();
     process.env.GITLAB_API_URL = 'https://gitlab.com';
     process.env.GITLAB_PRIVATE_TOKEN = 'test-token';
+    const { GitLabVCS } = await import('./api');
+    vcs = new GitLabVCS();
     mockCreateMergeRequest.mockClear();
     mockShowIssue.mockClear();
     mockCreateIssueNote.mockClear();
@@ -92,5 +87,25 @@ describe('GitLabVCS', () => {
     });
     expect(mockShowBranch).toHaveBeenCalledWith('test-owner/test-repo', 'main');
     expect(branch).toEqual({ name: 'main' });
+  });
+
+  it('should update a merge request', async () => {
+    const mockEdit = jest.fn().mockResolvedValue({ web_url: 'http://example.com/mr/1', iid: 1 });
+    vcs.api.MergeRequests.edit = mockEdit;
+
+    const pr = await vcs.updatePullRequest({
+      owner: 'test-owner',
+      repo: 'test-repo',
+      pullNumber: 1,
+      title: 'New Title',
+      body: 'New Body',
+    });
+
+    expect(mockEdit).toHaveBeenCalledWith(
+      'test-owner/test-repo',
+      1,
+      { title: 'New Title', description: 'New Body' },
+    );
+    expect(pr).toEqual({ html_url: 'http://example.com/mr/1', number: 1 });
   });
 });

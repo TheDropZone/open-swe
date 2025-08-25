@@ -193,6 +193,26 @@ export class GitHubVCS implements VCS {
       name: branch.name,
     };
   }
+
+  async updatePullRequest(options: {
+    owner: string;
+    repo: string;
+    pullNumber: number;
+    title?: string;
+    body?: string;
+  }): Promise<PullRequest | null> {
+    const pr = await updatePullRequest({
+      ...options,
+      githubInstallationToken: this.githubInstallationToken,
+    });
+    if (!pr) {
+      return null;
+    }
+    return {
+      html_url: pr.html_url,
+      number: pr.number,
+    };
+  }
 }
 
 // Keep the original functions as they are used in other places in the codebase

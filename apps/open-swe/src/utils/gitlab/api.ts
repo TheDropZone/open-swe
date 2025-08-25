@@ -11,6 +11,12 @@ import { VCS, PullRequest, Issue, IssueComment, Branch } from '../vcs/types';
 const logger = createLogger(LogLevel.INFO, 'GitLab-API');
 
 export class GitLabVCS implements VCS {
+  public api: ReturnType<typeof getGitlabApiClient>;
+
+  constructor() {
+    this.api = getGitlabApiClient();
+  }
+
   private getProjectId(owner: string, repo: string): string {
     return `${owner}/${repo}`;
   }
@@ -24,9 +30,8 @@ export class GitLabVCS implements VCS {
     baseBranch?: string;
   }): Promise<PullRequest | null> {
     try {
-      const api = getGitlabApiClient();
       const projectId = this.getProjectId(options.owner, options.repo);
-      const mergeRequest = await api.MergeRequests.create(
+      const mergeRequest = await this.api.MergeRequests.create(
         projectId,
         options.headBranch,
         options.baseBranch || 'main',
@@ -49,9 +54,8 @@ export class GitLabVCS implements VCS {
     issueNumber: number;
   }): Promise<Issue | null> {
     try {
-      const api = getGitlabApiClient();
       const projectId = this.getProjectId(options.owner, options.repo);
-      const issue = await api.Issues.show(projectId, options.issueNumber);
+      const issue = await this.api.Issues.show(projectId, options.issueNumber);
       return {
         title: issue.title,
         body: issue.description,
@@ -69,9 +73,8 @@ export class GitLabVCS implements VCS {
     body: string;
   }): Promise<IssueComment | null> {
     try {
-      const api = getGitlabApiClient();
       const projectId = this.getProjectId(options.owner, options.repo);
-      const comment = await api.IssueNotes.create(
+      const comment = await this.api.IssueNotes.create(
         projectId,
         options.issueNumber,
         options.body,
@@ -91,14 +94,40 @@ export class GitLabVCS implements VCS {
     branchName: string;
   }): Promise<Branch | null> {
     try {
-      const api = getGitlabApiClient();
       const projectId = this.getProjectId(options.owner, options.repo);
-      const branch = await api.Branches.show(projectId, options.branchName);
+      const branch = await this.api.Branches.show(projectId, options.branchName);
       return {
         name: branch.name,
       };
     } catch (error) {
       logger.error('Failed to get branch', { error });
+      return null;
+    }
+  }
+
+  async updatePullRequest(options: {
+    owner: string;
+    repo: string;
+    pullNumber: number;
+    title?: string;
+    body?: string;
+  }): Promise<PullRequest | null> {
+    try {
+      const projectId = this.getProjectId(options.owner, options.repo);
+      const mergeRequest = await this.api.MergeRequests.edit(
+        projectId,
+        options.pullNumber,
+        {
+          title: options.title,
+          description: options.body,
+        },
+      );
+      return {
+        html_url: mergeRequest.web_url,
+        number: mergeRequest.iid,
+      };
+    } catch (error) {
+      logger.error('Failed to update merge request', { error });
       return null;
     }
   }

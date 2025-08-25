@@ -45,4 +45,12 @@ export interface VCS {
     repo: string;
     branchName: string;
   }): Promise<Branch | null>;
+
+  updatePullRequest(options: {
+    owner: string;
+    repo: string;
+    pullNumber: number;
+    title?: string;
+    body?: string;
+  }): Promise<PullRequest | null>;
 }

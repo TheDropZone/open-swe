@@ -214,15 +214,12 @@ export async function openPullRequest(
     });
   } else {
     // Ensure the PR is ready for review
-    // TODO: Add updatePullRequest to VCS interface
-    // For now, we will just create a new PR
-    pullRequest = await vcs.createPullRequest({
-        owner,
-        repo,
-        headBranch: branchName,
-        title,
-        body: prBody,
-        baseBranch: state.targetRepository.branch,
+    pullRequest = await vcs.updatePullRequest({
+      owner,
+      repo,
+      title,
+      body: prBody,
+      pullNumber: prForTask,
     });
   }
 
